@@ -221,30 +221,50 @@ namespace dataexam
     }
 
     template <class T>
+    int generator::get_varidx(T &var)
+    {
+        int i = 0;
+        int idx = -1;
+
+        while (true) {
+            if (datary[i].ptr == &var)
+            {
+                idx = i;
+                break;
+            }
+
+            i++;
+            if (i >= varnum)
+            {
+                throw exception("generator::set_value() : variable is not found.");
+            }
+        }
+
+        return idx;
+    }
+
+    template <class T>
     void generator::set_value(u4 t, u4 timing, double value, T &var)
     {
         int i = 0;
+        int idx;
         double lsb;
 
         if (t == timing)
         {
-            while (true) {
-                if (datary[i].ptr == &var)
-                {
-                    lsb = datary[i].lsb;
-                    break;
-                }
-
-                i++;
-                if (i >= varnum)
-                {
-                    throw exception("generator::set_value() : variable is not found.");
-                }
-            }
-
+            idx = get_varidx(var);
+            lsb = datary[idx].lsb;
+            
             var = (int)(value / lsb);
         }
     }
+
+    template int generator::get_varidx<u1>(u1 &var);
+    template int generator::get_varidx<u2>(u2 &var);
+    template int generator::get_varidx<u4>(u4 &var);
+    template int generator::get_varidx<s1>(s1 &var);
+    template int generator::get_varidx<s1>(s1 &var);
+    template int generator::get_varidx<s1>(s1 &var);
 
     template void generator::set_value<u1>(u4 t, u4 timing, double value, u1 &var);
     template void generator::set_value<u2>(u4 t, u4 timing, double value, u2 &var);
