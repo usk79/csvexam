@@ -8,7 +8,7 @@ u2 run;
 u2 reset;
 u2 mode;
 u2 runok;
-u2 trq;
+s4 trq;
 
 dataexam::VARDATA varary[] = {
     SETVAR_M(tim, 0.002, time),
@@ -28,7 +28,7 @@ void gen_signal(dataexam::generator &gen)
 
     gen.set_value(tim, 25, 1, run);
 
-    gen.set_value(tim, 35, 5.25, trq);
+    gen.set_value(tim, 35, -5.25, trq);
 
 }
 

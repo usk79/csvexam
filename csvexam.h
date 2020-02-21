@@ -67,6 +67,8 @@ namespace dataexam
     public:
         generator(VARDATA *ary, int sizeofary);
         ~generator();
-        void set_value(u4 t, u4 timing, double value, u2 &var);
+        
+        template <class T>
+        void set_value(u4 t, u4 timing, double value, T &var);
     };
 }

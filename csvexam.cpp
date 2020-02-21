@@ -220,7 +220,8 @@ namespace dataexam
 
     }
 
-    void generator::set_value(u4 t, u4 timing, double value, u2 &var)
+    template <class T>
+    void generator::set_value(u4 t, u4 timing, double value, T &var)
     {
         int i = 0;
         double lsb;
@@ -245,4 +246,10 @@ namespace dataexam
         }
     }
 
+    template void generator::set_value<u1>(u4 t, u4 timing, double value, u1 &var);
+    template void generator::set_value<u2>(u4 t, u4 timing, double value, u2 &var);
+    template void generator::set_value<u4>(u4 t, u4 timing, double value, u4 &var);
+    template void generator::set_value<s1>(u4 t, u4 timing, double value, s1 &var);
+    template void generator::set_value<s2>(u4 t, u4 timing, double value, s2 &var);
+    template void generator::set_value<s4>(u4 t, u4 timing, double value, s4 &var);
 }
