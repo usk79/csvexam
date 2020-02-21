@@ -60,4 +60,13 @@ namespace dataexam
         void write_line(const VARDATA *ary);
     };
 
+    class generator {
+        VARDATA *datary;
+        int varnum;
+
+    public:
+        generator(VARDATA *ary, int sizeofary);
+        ~generator();
+        void set_value(u4 t, u4 timing, double value, u2 &var);
+    };
 }

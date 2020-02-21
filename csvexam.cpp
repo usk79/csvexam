@@ -20,6 +20,7 @@ namespace dataexam
     {
         mode = md;
         varnum = sizeofary / sizeof(VARDATA);
+        values = NULL;
 
         switch (mode) {
             case MODE_READ:
@@ -35,7 +36,7 @@ namespace dataexam
 
     csv::~csv()
     {
-        delete[] values;
+        if (values != NULL) delete[] values;
         fclose(csvfile);
     }
 
@@ -206,6 +207,42 @@ namespace dataexam
         }
 
         return ret;
+    }
+
+    generator::generator(VARDATA *ary, int sizeofary)
+    {
+        varnum = sizeofary / sizeof(VARDATA);
+        datary = ary;
+    }
+
+    generator::~generator()
+    {
+
+    }
+
+    void generator::set_value(u4 t, u4 timing, double value, u2 &var)
+    {
+        int i = 0;
+        double lsb;
+
+        if (t == timing)
+        {
+            while (true) {
+                if (datary[i].ptr == &var)
+                {
+                    lsb = datary[i].lsb;
+                    break;
+                }
+
+                i++;
+                if (i >= varnum)
+                {
+                    throw exception("generator::set_value() : variable is not found.");
+                }
+            }
+
+            var = (int)(value / lsb);
+        }
     }
 
 }
