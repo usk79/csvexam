@@ -35,6 +35,7 @@ namespace dataexam
 
     csv::~csv()
     {
+        delete[] values;
         fclose(csvfile);
     }
 
@@ -70,6 +71,7 @@ namespace dataexam
                 printf("variable : \"%s\" is not found.\n", ary[i].name);
             }
         }
+         values = new double[csv_colnum];
     }
 
     void csv::open_csv_w(const char *filename, VARDATA *ary)
@@ -116,7 +118,6 @@ namespace dataexam
     {
         char *str;
         int idx = 0;
-        double *values = new double[csv_colnum];
 
         if (mode == MODE_WRITE)
         {
@@ -152,7 +153,6 @@ namespace dataexam
             }
         }
 
-        delete[] values;
 
         return OK;
     }

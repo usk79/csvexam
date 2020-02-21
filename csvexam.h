@@ -44,6 +44,7 @@ namespace dataexam
         char linebuf[LINEBUFSIZE];
         int varnum;      /* 検索対象の変数の数 */
         int mode;        /* モード： */
+        double *values;
 
         void set_varindex(const char *str, VARDATA *var, int idx);
         void set_dat(void *buf, int dat, size_t size);
