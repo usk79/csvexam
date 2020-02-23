@@ -9,7 +9,7 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "build\\main.exe",
-            "args": ["test_big.csv", "result.csv"],
+            "args": ["test\\test_pattern1.csv", "test\\result_pattern1.csv"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

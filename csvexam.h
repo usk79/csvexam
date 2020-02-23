@@ -28,6 +28,8 @@ namespace dataexam
     const int FINISH        = -1;
     const int MODE_READ     = 0;
     const int MODE_WRITE    = 1;
+    const int UPDATE_ALWAYS = 0;
+    const int UPDATE_EDGE   = 1;
 
     class exception
     {
@@ -37,27 +39,32 @@ namespace dataexam
         const char* err_msg();
     };
 
+    typedef struct {
+        double data;    /* CSVから読んだデータ */    
+        bool edge_flg;  /* 前回値から変化したか */
+    } CSVDATA;
 
     class csv {
         FILE *csvfile;  /* csv file pointer */
+        VARDATA *varary;
         int csv_colnum; /* csvファイルの列数 */
         char linebuf[LINEBUFSIZE];
         int varnum;      /* 検索対象の変数の数 */
         int mode;        /* モード： */
-        double *values;
+        CSVDATA *values;
 
-        void set_varindex(const char *str, VARDATA *var, int idx);
+        void set_varindex(const char *str, int idx);
         void set_dat(void *buf, int dat, size_t size);
         int get_dat(void *buf, size_t size);
-        void open_csv_r(const char *filename, VARDATA *var);
-        void open_csv_w(const char *filename, VARDATA *var);
+        void open_csv_r(const char *filename);
+        void open_csv_w(const char *filename);
             
     public:
         csv(const char *filename, VARDATA *ary, const int sizeofary, int md);
         ~csv();
 
-        int read_line(VARDATA *ary); /* 続きがあれば1, 終了なら-1 */
-        void write_line(const VARDATA *ary);
+        int read_line(); /* 続きがあれば1, 終了なら-1 */
+        void write_line();
     };
 
     class generator {

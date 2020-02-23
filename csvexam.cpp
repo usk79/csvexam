@@ -21,13 +21,14 @@ namespace dataexam
         mode = md;
         varnum = sizeofary / sizeof(VARDATA);
         values = NULL;
+        varary = ary;
 
         switch (mode) {
             case MODE_READ:
-                open_csv_r(filename, ary);
+                open_csv_r(filename);
                 break;
             case MODE_WRITE:
-                open_csv_w(filename, ary);
+                open_csv_w(filename);
                 break;
             default:
                 throw exception("Invalid Mode is set.");
@@ -40,7 +41,7 @@ namespace dataexam
         fclose(csvfile);
     }
 
-    void csv::open_csv_r(const char *filename, VARDATA *ary)
+    void csv::open_csv_r(const char *filename)
     {   
         char *str;
         int idx = 0;
@@ -54,13 +55,13 @@ namespace dataexam
         fgets(linebuf, LINEBUFSIZE, csvfile);
         
         str = strtok(linebuf, ",");
-        set_varindex(str, ary, idx);
+        set_varindex(str, idx);
             
         while (str != NULL) {
             idx++;
             str = strtok(NULL, ",");
             if (str != NULL) {
-                set_varindex(str, ary, idx);
+                set_varindex(str, idx);
             }
         }
 
@@ -68,14 +69,16 @@ namespace dataexam
 
         /* Inform inexist variables. */
         for (int i = 0; i < varnum; i++) {
-            if (ary[i].idx < 0) {
-                printf("variable : \"%s\" is not found.\n", ary[i].name);
+            if (varary[i].idx < 0) {
+                printf("variable : \"%s\" is not found.\n", varary[i].name);
             }
         }
-         values = new double[csv_colnum];
+        
+        values = new CSVDATA[csv_colnum]; 
+        memset(values, 0, sizeof(CSVDATA) * csv_colnum); /* initialize values */
     }
 
-    void csv::open_csv_w(const char *filename, VARDATA *ary)
+    void csv::open_csv_w(const char *filename)
     {
         csvfile = fopen(filename, "w");
         if (csvfile == NULL)
@@ -86,7 +89,7 @@ namespace dataexam
         memset(linebuf, '\0', LINEBUFSIZE);
 
         for (int i = 0; i < varnum; i++) {
-            strcat(linebuf, ary[i].name);
+            strcat(linebuf, varary[i].name);
             if (i < varnum - 1) {
                 strcat(linebuf, ",");
             }
@@ -95,7 +98,7 @@ namespace dataexam
         fputc('\n', csvfile);
     }
 
-    void csv::set_varindex(const char *str, VARDATA *ary, int idx)
+    void csv::set_varindex(const char *str, int idx)
     {
         char buf[BUFSIZE];
         int varlen;
@@ -109,19 +112,19 @@ namespace dataexam
         if (buf[varlen - 1] == '\n') buf[varlen - 1] = '\0'; 
 
         for (int i = 0; i < varnum; i++) {
-            if (strcmp(buf, ary[i].name) == 0) {
-                ary[i].idx = idx;
+            if (strcmp(buf, varary[i].name) == 0) {
+                varary[i].idx = idx;
             }
         }
     }
 
-    int csv::read_line(VARDATA *ary)
+    int csv::read_line()
     {
         char *str;
         int idx = 0;
+        double tmpdata;
 
-        if (mode == MODE_WRITE)
-        {
+        if (mode == MODE_WRITE) {
             throw exception("Mode is Inappropriate.");
         }
 
@@ -131,34 +134,51 @@ namespace dataexam
             return FINISH;
         }
 
+        /* load a line from csv data */
         str = strtok(linebuf, ",");
-        values[idx] = atof(str);
+        tmpdata = atof(str);
+        
+        if (values[idx].data != tmpdata) {
+            values[idx].edge_flg = true;
+            values[idx].data = tmpdata;
+        }
+        else {
+            values[idx].edge_flg = false;
+        }
 
         while (str != NULL) {
             idx++;
             str = strtok(NULL, ",");
             if (str != NULL) {
                 if (idx >= csv_colnum) throw exception("column size is incorrect!");
-                
-                values[idx] = atof(str);
+
+                tmpdata = atof(str);
+        
+                if (values[idx].data != tmpdata) {
+                    values[idx].edge_flg = true;
+                    values[idx].data = tmpdata;
+                }
+                else {
+                    values[idx].edge_flg = false;
+                }
+                        
             }
         }
 
-
+        /* set data to varary */
         for (int i = 0; i < varnum; i++) {
-            VARDATA *dat = &ary[i];
-            if (dat->idx >= 0)
+            VARDATA *dat = &varary[i];
+            if (dat->idx >= 0 && values[dat->idx].edge_flg == true)
             {
-                int tmp = int( values[dat->idx] / dat->lsb + dat->lsb / 2); /* rounding */
+                int tmp = int( values[dat->idx].data / dat->lsb + dat->lsb / 2); /* rounding */
                 set_dat(dat->ptr, tmp, dat->size);
             }
         }
 
-
         return OK;
     }
 
-    void csv::write_line(const VARDATA *ary)
+    void csv::write_line()
     {   
         char buf[BUFSIZE];
 
@@ -170,8 +190,8 @@ namespace dataexam
         }
 
         for (int i = 0; i < varnum; i++) {
-            int dat = get_dat(ary[i].ptr, ary[i].size);
-            double tmp = (double)dat * ary[i].lsb;
+            int dat = get_dat(varary[i].ptr, varary[i].size);
+            double tmp = (double)dat * varary[i].lsb;
 
             sprintf(buf, "%f", tmp);
             if (i < varnum - 1) {

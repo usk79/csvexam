@@ -2,23 +2,31 @@
 #include <time.h>
 #include "csvexam.h"
 
+
+#if 0
 /* 試験パターン生成テスト */
 u2 tim;
 u2 run;
 u2 reset;
 u2 mode;
 u2 runok;
-s4 trq;
+u2 status;
+s2 trq;
+u2 setok;
+u2 modeok;
+
+
 
 dataexam::VARDATA varary[] = {
     SETVAR_M(tim, 0.002, time),
-    SETVAR(run, 1.),
     SETVAR(reset, 1.),
     SETVAR(mode, 1.),
+    SETVAR(run, 1.),
+    SETVAR(trq, 1./8.),
     SETVAR(runok, 1.),
-    SETVAR(trq, 1./8.)
+    SETVAR(status, 1.)
 };
-
+/* 微分を検出するオプションを付けるか検討 */
 void gen_signal(dataexam::generator &gen)
 {
     gen.set_value(tim, 10, 1, reset);
@@ -28,14 +36,59 @@ void gen_signal(dataexam::generator &gen)
 
     gen.set_value(tim, 25, 1, run);
 
-    gen.set_value(tim, 35, -5.25, trq);
+    gen.set_value(tim, 35, 5.25, trq);
 
 }
 
+void init()
+{
+    tim = 0;
+    run = 0;
+    reset = 0;
+    mode = 0;
+    runok = 0;
+    status = 9;
+    trq = 0;
+    setok = 0;
+    modeok = 0;
+}
+
 void logic()
-{    
-    if (mode == 3) runok = 1;
-    else runok = 0;
+{   
+    static u2 reseto = 0;
+    static u2 runo = 0;
+    static u2 runcnt = 0;
+
+    setok = (trq < 50);
+    modeok = (mode == 2);
+    runok = (status == 0 && setok && modeok);
+
+    if ((status == 9) && (reset == 1 && reseto == 0))
+    {
+        status = 0;
+    }
+    
+    if ((status == 0) && (run == 1 && runo == 0))
+    {
+        status = 1;
+        runcnt = 0;
+    }
+
+    if (status == 1)
+    {
+        runcnt++;
+        
+        if (runcnt > 20)
+        {
+            status = 0;
+            run = 0;
+        }
+    }
+    
+
+
+    runo = run;
+    reseto = reset;
 }
 
 int main(int argc, char *argv[])
@@ -77,32 +130,90 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-
+#endif
 
 
 /* CSVファイルの読込と書き出しテスト */
-#if 0
-u4 tim;
+#if 1
+u2 tim;
+u2 run;
+u2 reset;
+u2 mode;
+u2 runok;
+u2 status;
 s2 trq;
-s4 rpm;
-u2 cnt;
-s4 sin;
+u2 setok;
+u2 modeok;
 
 dataexam::VARDATA varary[] = {
-    SETVAR_M(tim, 0.005, time), 
-    SETVAR(trq, 1./8.), 
-    SETVAR(rpm, 1.), 
-    SETVAR(cnt, 1.), 
-    SETVAR(sin, 0.00001)
+    SETVAR_M(tim, 0.002, time),
+    SETVAR(reset, 1.),
+    SETVAR(mode, 1.),
+    SETVAR(run, 1.),
+    SETVAR(trq, 1./8.),
+};
+dataexam::VARDATA output[] = {
+    SETVAR_M(tim, 0.002, time),
+    SETVAR(reset, 1.),
+    SETVAR(mode, 1.),
+    SETVAR(run, 1.),
+    SETVAR(trq, 1./8.),
+    SETVAR(runok, 1.),
+    SETVAR(setok, 1.),
+    SETVAR(modeok, 1.),
+    SETVAR(status, 1.)
 };
 
-dataexam::VARDATA output[] = {
-    SETVAR_M(tim, 0.005, time), 
-    SETVAR(trq, 1./8.), 
-    SETVAR(rpm, 1.), 
-    SETVAR(cnt, 1.), 
-    SETVAR(sin, 0.00001)
-};
+void init()
+{
+    tim = 0;
+    run = 0;
+    reset = 0;
+    mode = 0;
+    runok = 0;
+    status = 9;
+    trq = 0;
+    setok = 0;
+    modeok = 0;
+}
+
+void logic()
+{   
+    static u2 reseto = 0;
+    static u2 runo = 0;
+    static u2 runcnt = 0;
+
+    setok = (trq < 400);
+    modeok = (mode == 2);
+    runok = (status == 0 && setok && modeok);
+
+    if ((status == 9) && (reset == 1 && reseto == 0))
+    {
+        status = 0;
+    }
+    
+    if ((status == 0 && runok) && (run == 1 && runo == 0))
+    {
+        status = 1;
+        runcnt = 0;
+    }
+
+    if (status == 1)
+    {
+        runcnt++;
+        
+        if (runcnt > 20)
+        {
+            status = 0;
+            run = 0;
+        }
+    }
+    
+
+
+    runo = run;
+    reseto = reset;
+}
 
 int main(int argc, char *argv[])
 {
@@ -125,15 +236,13 @@ int main(int argc, char *argv[])
         dataexam::csv exam = dataexam::csv(inputfile, varary, sizeof(varary), dataexam::MODE_READ);
         dataexam::csv rslt = dataexam::csv(outputfile, output, sizeof(output), dataexam::MODE_WRITE);
         
-        while (exam.read_line(varary) == dataexam::OK)
+        init();
+
+        while (exam.read_line() == dataexam::OK)
         {
-            if (cnt == 0)
-            {
-                rslt.write_line(varary);
-            }
-            
-            debug++;
-            cnt = debug & 0x0003;
+            logic();
+
+            rslt.write_line();
         }
         printf("finish!\n");
     }
