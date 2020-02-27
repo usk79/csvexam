@@ -170,7 +170,15 @@ namespace dataexam
             VARDATA *dat = &varary[i];
             if (dat->idx >= 0 && values[dat->idx].edge_flg == true)
             {
-                int tmp = int( values[dat->idx].data / dat->lsb + dat->lsb / 2); /* rounding */
+                double value = values[dat->idx].data;
+                int tmp;
+                if (value < 0) {
+                    tmp = int( value / dat->lsb - dat->lsb / 2); /* rounding */
+                }
+                else {
+                    tmp = int( value / dat->lsb + dat->lsb / 2); /* rounding */
+                }
+                
                 set_dat(dat->ptr, tmp, dat->size);
             }
         }
@@ -221,9 +229,12 @@ namespace dataexam
         size_t i;
         int ret = 0;
 
-        for (i = 0; i < size; i++)
-        {
+        for (i = 0; i < size; i++) {
             ret += (int)(*ptr++ << (i << 3));
+        }
+
+        if ((char)(*--ptr) < 0) {
+            ret -= (1 << (i << 3));
         }
 
         return ret;

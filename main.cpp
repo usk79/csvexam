@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 
             logic();
 
-            rslt.write_line(varary);
+            rslt.write_line();
         }
 
     }
