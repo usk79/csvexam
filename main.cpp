@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <time.h>
-#include "csvexam.h"
+#include "dataexam.h"
 
 
 #if 0
@@ -137,6 +137,7 @@ int main(int argc, char *argv[])
 #if 1
 u2 tim;
 u2 run;
+u2 sig;
 u2 reset;
 u2 mode;
 u2 runok;
@@ -148,8 +149,9 @@ u2 modeok;
 dataexam::VARDATA varary[] = {
     SETVAR_M(tim, 0.002, time),
     SETVAR(reset, 1.),
-    SETVAR(mode, 1.),
-    SETVAR(run, 1.),
+    SETVAR_TYPE(mode, 1., dataexam::BOTHEDGE_CYCLE),
+    SETVAR_TYPE(run, 1., dataexam::RISEEDGE_CYCLE),
+    SETVAR_TYPE(sig, 1., dataexam::FALLEDGE_CYCLE),
     SETVAR(trq, 1./8.),
 };
 dataexam::VARDATA output[] = {
@@ -157,6 +159,7 @@ dataexam::VARDATA output[] = {
     SETVAR(reset, 1.),
     SETVAR(mode, 1.),
     SETVAR(run, 1.),
+    SETVAR(sig, 1.),
     SETVAR(trq, 1./8.),
     SETVAR(runok, 1.),
     SETVAR(setok, 1.),
@@ -209,6 +212,13 @@ void logic()
         }
     }
     
+    if (tim == 2 || tim == 5 || tim == 8)
+    {
+        mode = 0;
+        run = 0;
+        sig = 0;
+        trq = 0;
+    }
 
 
     runo = run;

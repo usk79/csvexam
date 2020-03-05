@@ -8,7 +8,7 @@
             "name": "(Windows) 起動",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "build\\main.exe",
+            "program": "build\\test.exe",
             "args": ["test\\test_pattern1.csv", "test\\result_pattern1.csv"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
