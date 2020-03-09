@@ -151,7 +151,7 @@ dataexam::VARDATA varary[] = {
     SETVAR(reset, 1.),
     SETVAR_TYPE(mode, 1., dataexam::BOTHEDGE_CYCLE),
     SETVAR_TYPE(run, 1., dataexam::RISEEDGE_CYCLE),
-    SETVAR_TYPE(sig, 1., dataexam::FALLEDGE_CYCLE),
+    SETVAR_TYPE(sig, 2., dataexam::BOTHEDGE_CYCLE),
     SETVAR(trq, 1./8.),
 };
 dataexam::VARDATA output[] = {
@@ -159,7 +159,7 @@ dataexam::VARDATA output[] = {
     SETVAR(reset, 1.),
     SETVAR(mode, 1.),
     SETVAR(run, 1.),
-    SETVAR(sig, 1.),
+    SETVAR(sig, 2.),
     SETVAR(trq, 1./8.),
     SETVAR(runok, 1.),
     SETVAR(setok, 1.),

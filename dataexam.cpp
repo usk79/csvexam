@@ -23,6 +23,10 @@ namespace dataexam
         values = NULL;
         varary = ary;
 
+        for (int i = 0; i < varnum; i++) {
+            if (varary[i].lsb <= 0) { throw exception("Invalid LSB is set."); }
+        }
+
         switch (mode) {
             case MODE_READ:
                 open_csv_r(filename);
@@ -45,21 +49,23 @@ namespace dataexam
     {   
         char *str;
         int idx = 0;
-        
-        csvfile = fopen(filename, "r");
-        if (csvfile == NULL)
+        errno_t fopen_err;
+        char *ctx;
+
+        fopen_err = fopen_s(&csvfile, filename, "r");
+        if (fopen_err != 0)
         {
             throw exception("Can not open file.\n");
         }
 
         fgets(linebuf, LINEBUFSIZE, csvfile);
         
-        str = strtok(linebuf, ",");
+        str = strtok_s(linebuf, ",", &ctx);
         set_varindex(str, idx);
             
         while (str != NULL) {
             idx++;
-            str = strtok(NULL, ",");
+            str = strtok_s(NULL, ",", &ctx);
             if (str != NULL) {
                 set_varindex(str, idx);
             }
@@ -80,8 +86,10 @@ namespace dataexam
 
     void csv::open_csv_w(const char *filename)
     {
-        csvfile = fopen(filename, "w");
-        if (csvfile == NULL)
+        errno_t fopen_err;
+
+        fopen_err = fopen_s(&csvfile, filename, "w");
+        if (fopen_err != 0)
         {
             throw exception("Can not open file.\n");
         }
@@ -89,9 +97,9 @@ namespace dataexam
         memset(linebuf, '\0', LINEBUFSIZE);
 
         for (int i = 0; i < varnum; i++) {
-            strcat(linebuf, varary[i].name);
+            strcat_s(linebuf, sizeof(linebuf), varary[i].name);
             if (i < varnum - 1) {
-                strcat(linebuf, ",");
+                strcat_s(linebuf, sizeof(linebuf), ",");
             }
         }
         fputs(linebuf, csvfile);
@@ -153,6 +161,7 @@ namespace dataexam
     int csv::read_line()
     {
         char *str;
+        char *ctx;
         int idx = 0;
         double tmpdata;
 
@@ -167,7 +176,7 @@ namespace dataexam
         }
 
         /* load a line from csv data */
-        str = strtok(linebuf, ",");
+        str = strtok_s(linebuf, ",", &ctx);
         tmpdata = atof(str);
         
         values[idx].edge_flg = check_edgeflg(values[idx].data, tmpdata);
@@ -175,7 +184,7 @@ namespace dataexam
 
         while (str != NULL) {
             idx++;
-            str = strtok(NULL, ",");
+            str = strtok_s(NULL, ",", &ctx);
             if (str != NULL) {
                 if (idx >= csv_colnum) throw exception("column size is incorrect!");
 
@@ -195,10 +204,24 @@ namespace dataexam
                 double value = values[dat->idx].data;
                 int tmp;
                 if (value < 0) {
-                    tmp = int( value / dat->lsb - dat->lsb / 2); /* rounding */
+                    if (dat->lsb <= 1)
+                    {
+                        tmp = int( value / dat->lsb - dat->lsb / 2); /* rounding */
+                    }
+                    else
+                    {
+                        tmp = int( value / dat->lsb - 0.5); /* rounding */
+                    }
                 }
                 else {
-                    tmp = int( value / dat->lsb + dat->lsb / 2); /* rounding */
+                    if (dat->lsb <= 1)
+                    {
+                        tmp = int( value / dat->lsb + dat->lsb / 2); /* rounding */
+                    }
+                    else
+                    {
+                        tmp = int( value / dat->lsb + 0.5); /* rounding */
+                    }
                 }
                 
                 set_dat(dat->ptr, tmp, dat->size);
@@ -223,11 +246,11 @@ namespace dataexam
             int dat = get_dat(varary[i].ptr, varary[i].size);
             double tmp = (double)dat * varary[i].lsb;
 
-            sprintf(buf, "%f", tmp);
+            sprintf_s(buf, sizeof(buf), "%f", tmp);
             if (i < varnum - 1) {
-                strcat(buf, ",");
+                strcat_s(buf, sizeof(buf), ",");
             }
-            strcat(linebuf, buf);
+            strcat_s(linebuf, sizeof(linebuf), buf);
         }
         fputs(linebuf, csvfile);
         fputc('\n', csvfile);
