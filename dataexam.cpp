@@ -204,30 +204,24 @@ namespace dataexam
                 double value = values[dat->idx].data;
                 int tmp;
                 if (value < 0) {
-                    if (dat->lsb <= 1)
-                    {
+                    if (dat->lsb <= 1) {
                         tmp = int( value / dat->lsb - dat->lsb / 2); /* rounding */
                     }
-                    else
-                    {
+                    else {
                         tmp = int( value / dat->lsb - 0.5); /* rounding */
                     }
                 }
                 else {
-                    if (dat->lsb <= 1)
-                    {
+                    if (dat->lsb <= 1) {
                         tmp = int( value / dat->lsb + dat->lsb / 2); /* rounding */
                     }
-                    else
-                    {
+                    else {
                         tmp = int( value / dat->lsb + 0.5); /* rounding */
                     }
                 }
-                
                 set_dat(dat->ptr, tmp, dat->size);
             }
         }
-
         return OK;
     }
 
@@ -237,8 +231,7 @@ namespace dataexam
 
         memset(linebuf, '\0', LINEBUFSIZE);
 
-        if (mode == MODE_READ)
-        {
+        if (mode == MODE_READ) {
             throw exception("Mode is Inappropriate.");
         }
 
@@ -261,8 +254,7 @@ namespace dataexam
         unsigned char *ptr = (unsigned char *)buf;
         size_t i;
 
-        for (i = 0; i < size; i++)
-        {
+        for (i = 0; i < size; i++) {
             *ptr++ = (unsigned char)(dat >> (i << 3));
         }
 
@@ -303,15 +295,13 @@ namespace dataexam
         int idx = -1;
 
         while (true) {
-            if (datary[i].ptr == &var)
-            {
+            if (datary[i].ptr == &var) {
                 idx = i;
                 break;
             }
 
             i++;
-            if (i >= varnum)
-            {
+            if (i >= varnum) {
                 throw exception("generator::set_value() : variable is not found.");
             }
         }
@@ -326,8 +316,7 @@ namespace dataexam
         int idx;
         double lsb;
 
-        if (t == timing)
-        {
+        if (t == timing) {
             idx = get_varidx(var);
             lsb = datary[idx].lsb;
             
